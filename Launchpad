@@ -280,22 +280,3 @@ terraform apply -var-file=environments/dev.tfvars
 # For cleanup
 terraform destroy -var-file=environments/dev.tfvars
 ```
-
-## Notes:
-1. Security Features:
-   - IAM roles minimally configured
-   - MQTT/HTTP both enabled for development
-   - Bucket versioning enabled
-   - Function source protected
-
-2. Development Features:
-   - Environment separation
-   - Local state for development
-   - Easy cleanup
-   - Modular design
-
-3. Resource Naming:
-   - All resources include environment
-   - Consistent prefix (splat-)
-   - Clear purpose in names
-   - Easy identification
