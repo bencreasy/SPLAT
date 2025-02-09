@@ -54,7 +54,7 @@ graph TD
 
 ```bash
 # Clone repository
-git clone https://github.com/bencreasy/splat/launch-pad.git
+git clone https://github.com/bencreasy/splat/launchpad.git
 cd splat-ground-systems/launchpad
 
 # Initialize Terraform
