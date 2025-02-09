@@ -1,4 +1,3 @@
-```hcl
 terraform {
   required_version = ">= 1.0.0"
 
@@ -27,6 +26,3 @@ module "mission_control" {
   environment     = var.environment
   iot_registry_id = var.iot_registry_id
 }
-
-# Additional modules...
-```
