@@ -1,0 +1,6 @@
+project_id      = "splat-dev"
+environment     = "dev"
+region          = "us-central1"
+zone            = "us-central1-a"
+storage_class   = "STANDARD"
+iot_registry_id = "splat-devices"
