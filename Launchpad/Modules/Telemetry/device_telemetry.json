@@ -1,0 +1,48 @@
+
+[
+  {
+    "name": "device_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique identifier for the device"
+  },
+  {
+    "name": "timestamp",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Time of measurement"
+  },
+  {
+    "name": "metric_type",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Type of measurement"
+  },
+  {
+    "name": "value",
+    "type": "FLOAT",
+    "mode": "REQUIRED",
+    "description": "Measured value"
+  },
+  {
+    "name": "location",
+    "type": "RECORD",
+    "mode": "NULLABLE",
+    "fields": [
+      {
+        "name": "latitude",
+        "type": "FLOAT"
+      },
+      {
+        "name": "longitude",
+        "type": "FLOAT"
+      }
+    ]
+  },
+  {
+    "name": "metadata",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Additional measurement metadata"
+  }
+]
