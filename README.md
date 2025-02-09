@@ -1,7 +1,7 @@
 
 # SPLAT Ground Systems 🛰️
 
-SPLAT (Soil Permeability & Logging Analysis Transponder) Ground Systems provides the infrastructure and configuration management for SPLAT's ground segment operations.
+SPLAT (Soil Permeability & Logging Analyitics Transponder) Ground Systems provides the infrastructure and configuration management for SPLAT's backend operations.
 
 ## Overview
 
@@ -199,11 +199,6 @@ ansible-playbook playbooks/backup.yml
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
-## Acknowledgments
-
-- The SPLAT Development Team
-- Contributors and Testers
-- Open Source Community
 
 ## Project Status
 
