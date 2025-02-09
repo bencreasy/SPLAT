@@ -194,9 +194,6 @@ ansible-playbook playbooks/backup.yml
 ```
 
 
-## Security
-
-For security issues, please email security@your-org.com.
 
 ## License
 
@@ -210,7 +207,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Project Status
 
-Current Version: 0.1.0-alpha
+Current Version: 0.1.0-beta
 
 - [x] Basic Infrastructure
 - [x] Ground Control Setup
