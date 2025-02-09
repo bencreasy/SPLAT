@@ -63,3 +63,136 @@ resource "google_firestore_database" "splat_db" {
 
   app_engine_integration_mode = "Disabled"
 }
+
+# BigQuery Dataset for Analytics
+resource "google_bigquery_dataset" "telemetry_analytics" {
+  dataset_id                  = "splat_telemetry_${var.environment}"
+  friendly_name              = "SPLAT Telemetry Analytics"
+  description                = "Analytics dataset for SPLAT telemetry data"
+  location                   = var.location
+  project                    = var.project_id
+
+  default_table_expiration_ms = var.analytics_retention_days * 24 * 60 * 60 * 1000
+
+  labels = {
+    environment = var.environment
+    purpose     = "analytics"
+  }
+
+  access {
+    role          = "OWNER"
+    special_group = "projectOwners"
+  }
+
+  access {
+    role           = "READER"
+    group_by_email = var.analyst_group_email
+  }
+}
+
+# Create standard tables
+resource "google_bigquery_table" "device_telemetry" {
+  dataset_id = google_bigquery_dataset.telemetry_analytics.dataset_id
+  table_id   = "device_telemetry"
+  project    = var.project_id
+
+  time_partitioning {
+    type  = "DAY"
+    field = "timestamp"
+  }
+
+  clustering = ["device_id", "metric_type"]
+
+  schema = file("${path.module}/schemas/device_telemetry.json")
+
+  labels = {
+    environment = var.environment
+    data_type   = "telemetry"
+  }
+}
+
+# Pub/Sub topic for real-time analytics
+resource "google_pubsub_topic" "realtime_analytics" {
+  name    = "splat-realtime-analytics-${var.environment}"
+  project = var.project_id
+
+  message_retention_duration = "86400s"  # 24 hours
+
+  labels = {
+    environment = var.environment
+    purpose     = "analytics"
+  }
+}
+
+# Cloud Function for data transformation
+resource "google_storage_bucket" "function_source" {
+  name     = "splat-telemetry-functions-${var.environment}"
+  location = var.location
+  project  = var.project_id
+
+  uniform_bucket_level_access = true
+}
+
+resource "google_cloudfunctions_function" "data_transformer" {
+  name        = "splat-telemetry-transformer-${var.environment}"
+  description = "Transform telemetry data for analytics"
+  runtime     = "python39"
+
+  available_memory_mb   = 256
+  source_archive_bucket = google_storage_bucket.function_source.name
+  source_archive_object = "functions/transformer.zip"
+  entry_point          = "transform_telemetry"
+
+  event_trigger {
+    event_type = "google.storage.object.finalize"
+    resource   = google_storage_bucket.raw_data.name
+  }
+
+  environment_variables = {
+    ENVIRONMENT          = var.environment
+    DESTINATION_DATASET = google_bigquery_dataset.telemetry_analytics.dataset_id
+    ANALYTICS_TOPIC     = google_pubsub_topic.realtime_analytics.name
+  }
+}
+
+# IAM configuration
+resource "google_storage_bucket_iam_member" "viewer" {
+  bucket = google_storage_bucket.telemetry_data.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${var.service_account_email}"
+}
+
+resource "google_project_iam_member" "bigquery" {
+  project = var.project_id
+  role    = "roles/bigquery.dataViewer"
+  member  = "serviceAccount:${var.service_account_email}"
+}
+
+# Monitoring and Alerting
+resource "google_monitoring_alert_policy" "storage_usage" {
+  display_name = "SPLAT Telemetry Storage Usage - ${var.environment}"
+  project      = var.project_id
+  combiner     = "OR"
+
+  conditions {
+    display_name = "Storage bucket filling up"
+    
+    condition_threshold {
+      filter          = "resource.type = \"gcs_bucket\" AND resource.labels.bucket_name = \"${google_storage_bucket.telemetry_data.name}\""
+      duration        = "300s"
+      comparison      = "COMPARISON_GT"
+      threshold_value = var.storage_alert_threshold
+
+      trigger {
+        count = 1
+      }
+
+      aggregations {
+        alignment_period   = "300s"
+        per_series_aligner = "ALIGN_MEAN"
+      }
+    }
+  }
+
+  notification_channels = var.notification_channels
+}
