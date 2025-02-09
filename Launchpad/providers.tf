@@ -1,7 +1,7 @@
 ### providers.tf
 ```hcl
 provider "google" {
-  project = var.project_id
+  project = var.splat_launchpad
   region  = var.region
   zone    = var.zone
 }
