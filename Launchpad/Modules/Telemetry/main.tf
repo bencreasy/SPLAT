@@ -1,6 +1,7 @@
 ### modules/telemetry/main.tf
 
 # Cloud Storage Buckets
+
 resource "google_storage_bucket" "telemetry_data" {
   name     = "splat-telemetry-${var.environment}"
   location = var.location
@@ -53,6 +54,7 @@ resource "google_storage_bucket" "raw_data" {
 }
 
 # Firestore
+
 resource "google_firestore_database" "splat_db" {
   project     = var.project_id
   name        = "(default)"
@@ -65,6 +67,7 @@ resource "google_firestore_database" "splat_db" {
 }
 
 # BigQuery Dataset for Analytics
+
 resource "google_bigquery_dataset" "telemetry_analytics" {
   dataset_id                  = "splat_telemetry_${var.environment}"
   friendly_name              = "SPLAT Telemetry Analytics"
@@ -91,6 +94,7 @@ resource "google_bigquery_dataset" "telemetry_analytics" {
 }
 
 # Create standard tables
+
 resource "google_bigquery_table" "device_telemetry" {
   dataset_id = google_bigquery_dataset.telemetry_analytics.dataset_id
   table_id   = "device_telemetry"
@@ -112,6 +116,7 @@ resource "google_bigquery_table" "device_telemetry" {
 }
 
 # Pub/Sub topic for real-time analytics
+
 resource "google_pubsub_topic" "realtime_analytics" {
   name    = "splat-realtime-analytics-${var.environment}"
   project = var.project_id
@@ -125,6 +130,7 @@ resource "google_pubsub_topic" "realtime_analytics" {
 }
 
 # Cloud Function for data transformation
+
 resource "google_storage_bucket" "function_source" {
   name     = "splat-telemetry-functions-${var.environment}"
   location = var.location
@@ -156,6 +162,7 @@ resource "google_cloudfunctions_function" "data_transformer" {
 }
 
 # IAM configuration
+
 resource "google_storage_bucket_iam_member" "viewer" {
   bucket = google_storage_bucket.telemetry_data.name
   role   = "roles/storage.objectViewer"
@@ -169,6 +176,7 @@ resource "google_project_iam_member" "bigquery" {
 }
 
 # Monitoring and Alerting
+
 resource "google_monitoring_alert_policy" "storage_usage" {
   display_name = "SPLAT Telemetry Storage Usage - ${var.environment}"
   project      = var.project_id
