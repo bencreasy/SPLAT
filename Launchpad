@@ -1,0 +1,301 @@
+# SPLAT LaunchPad - Terraform Configuration
+
+## Directory Structure
+```
+launchpad/
+├── main.tf
+├── variables.tf
+├── outputs.tf
+├── providers.tf
+├── versions.tf
+├── backend.tf
+├── modules/
+│   ├── mission_control/     # IoT Core and Pub/Sub
+│   ├── ground_station/      # Functions and Processing
+│   ├── telemetry/          # Storage and Database
+│   └── security/           # IAM and Authentication
+└── environments/
+    ├── dev.tfvars
+    ├── staging.tfvars
+    └── prod.tfvars
+```
+
+## Core Configuration Files
+
+### versions.tf
+```hcl
+terraform {
+  required_version = ">= 1.0.0"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 4.0"
+    }
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 4.0"
+    }
+  }
+}
+```
+
+### providers.tf
+```hcl
+provider "google" {
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+}
+
+provider "google-beta" {
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+}
+```
+
+### variables.tf
+```hcl
+variable "project_id" {
+  description = "The GCP project ID"
+  type        = string
+}
+
+variable "region" {
+  description = "Default region for resources"
+  type        = string
+  default     = "us-central1"
+}
+
+variable "zone" {
+  description = "Default zone for resources"
+  type        = string
+  default     = "us-central1-a"
+}
+
+variable "environment" {
+  description = "Environment (dev, staging, prod)"
+  type        = string
+  default     = "dev"
+}
+
+variable "iot_registry_id" {
+  description = "IoT Core registry ID"
+  type        = string
+  default     = "splat-devices"
+}
+
+variable "storage_class" {
+  description = "Storage class for buckets"
+  type        = string
+  default     = "STANDARD"
+}
+```
+
+### main.tf
+```hcl
+# Mission Control - IoT Core and Pub/Sub Setup
+module "mission_control" {
+  source = "./modules/mission_control"
+
+  project_id      = var.project_id
+  region          = var.region
+  environment     = var.environment
+  iot_registry_id = var.iot_registry_id
+}
+
+# Ground Station - Functions and Processing
+module "ground_station" {
+  source = "./modules/ground_station"
+
+  project_id         = var.project_id
+  region            = var.region
+  environment       = var.environment
+  pubsub_topic_id   = module.mission_control.telemetry_topic_id
+  function_runtime  = "python39"
+}
+
+# Telemetry - Storage and Database
+module "telemetry" {
+  source = "./modules/telemetry"
+
+  project_id     = var.project_id
+  environment    = var.environment
+  storage_class  = var.storage_class
+}
+
+# Security - IAM and Authentication
+module "security" {
+  source = "./modules/security"
+
+  project_id   = var.project_id
+  environment  = var.environment
+}
+```
+
+## Module Configurations
+
+### modules/mission_control/main.tf
+```hcl
+# IoT Core Registry
+resource "google_cloudiot_registry" "splat_registry" {
+  name     = "${var.iot_registry_id}-${var.environment}"
+  region   = var.region
+  project  = var.project_id
+
+  event_notification_configs {
+    pubsub_topic_name = google_pubsub_topic.telemetry.id
+    subfolder_matches = ""
+  }
+
+  state_notification_config = {
+    pubsub_topic_name = google_pubsub_topic.device_state.id
+  }
+
+  mqtt_config = {
+    mqtt_enabled_state = "MQTT_ENABLED"
+  }
+
+  http_config = {
+    http_enabled_state = "HTTP_ENABLED"
+  }
+}
+
+# Pub/Sub Topics
+resource "google_pubsub_topic" "telemetry" {
+  name    = "splat-telemetry-${var.environment}"
+  project = var.project_id
+
+  labels = {
+    environment = var.environment
+  }
+}
+
+resource "google_pubsub_topic" "device_state" {
+  name    = "splat-device-state-${var.environment}"
+  project = var.project_id
+
+  labels = {
+    environment = var.environment
+  }
+}
+```
+
+### modules/ground_station/main.tf
+```hcl
+# Cloud Functions
+resource "google_cloudfunctions_function" "data_processor" {
+  name        = "splat-processor-${var.environment}"
+  description = "SPLAT data processing function"
+  runtime     = var.function_runtime
+  
+  available_memory_mb   = 256
+  source_archive_bucket = google_storage_bucket.function_source.name
+  source_archive_object = google_storage_bucket_object.function_zip.name
+  entry_point          = "process_telemetry"
+  
+  event_trigger {
+    event_type = "google.pubsub.topic.publish"
+    resource   = var.pubsub_topic_id
+  }
+
+  environment_variables = {
+    ENVIRONMENT = var.environment
+  }
+}
+
+# Function source bucket
+resource "google_storage_bucket" "function_source" {
+  name     = "splat-functions-${var.environment}"
+  location = var.region
+  project  = var.project_id
+
+  uniform_bucket_level_access = true
+}
+```
+
+### modules/telemetry/main.tf
+```hcl
+# Cloud Storage Buckets
+resource "google_storage_bucket" "telemetry_data" {
+  name     = "splat-telemetry-${var.environment}"
+  location = "US"
+  project  = var.project_id
+
+  uniform_bucket_level_access = true
+  storage_class              = var.storage_class
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    condition {
+      age = 90
+    }
+    action {
+      type = "SetStorageClass"
+      storage_class = "COLDLINE"
+    }
+  }
+}
+
+# Firestore
+resource "google_firestore_database" "splat_db" {
+  project     = var.project_id
+  name        = "(default)"
+  location_id = "nam5"
+  type        = "FIRESTORE_NATIVE"
+
+  concurrency_mode = "OPTIMISTIC"
+}
+```
+
+### environments/dev.tfvars
+```hcl
+project_id      = "splat-dev"
+environment     = "dev"
+region          = "us-central1"
+zone            = "us-central1-a"
+storage_class   = "STANDARD"
+iot_registry_id = "splat-devices"
+```
+
+## Deployment Instructions
+
+```bash
+# Initialize Terraform
+cd launchpad
+terraform init
+
+# Create a new workspace for development
+terraform workspace new dev
+
+# Plan the deployment
+terraform plan -var-file=environments/dev.tfvars
+
+# Apply the configuration
+terraform apply -var-file=environments/dev.tfvars
+
+# For cleanup
+terraform destroy -var-file=environments/dev.tfvars
+```
+
+## Notes:
+1. Security Features:
+   - IAM roles minimally configured
+   - MQTT/HTTP both enabled for development
+   - Bucket versioning enabled
+   - Function source protected
+
+2. Development Features:
+   - Environment separation
+   - Local state for development
+   - Easy cleanup
+   - Modular design
+
+3. Resource Naming:
+   - All resources include environment
+   - Consistent prefix (splat-)
+   - Clear purpose in names
+   - Easy identification
