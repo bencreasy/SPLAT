@@ -1,9 +1,9 @@
 ### modules/telemetry/main.tf
-```hcl
+
 # Cloud Storage Buckets
 resource "google_storage_bucket" "telemetry_data" {
   name     = "splat-telemetry-${var.environment}"
-  location = "US"
+  location = var.location
   project  = var.project_id
 
   uniform_bucket_level_access = true
@@ -15,11 +15,39 @@ resource "google_storage_bucket" "telemetry_data" {
 
   lifecycle_rule {
     condition {
-      age = 90
+      age = var.archive_age_days
     }
     action {
-      type = "SetStorageClass"
-      storage_class = "COLDLINE"
+      type = "Delete"
+      
+    }
+  }
+  labels = {
+    environment = var.environment
+    purpose = "telemetry"
+  }
+}
+
+resource "google_storage_bucket" "raw_data" {
+  name = "splat-raw-${var.environment}"
+  location = var.location
+  project = var.project_id
+
+  uniform_bucket_level_access = true
+  storage_class = "STANDARD"
+
+  lifecycle_rule {
+    condition {
+      age = 7
+    }
+    acton {
+      type = "Delete:
+    }
+    }
+
+    labels = {
+      environment = var.environment
+      purpose = "raw-data"
     }
   }
 }
@@ -28,9 +56,10 @@ resource "google_storage_bucket" "telemetry_data" {
 resource "google_firestore_database" "splat_db" {
   project     = var.project_id
   name        = "(default)"
-  location_id = "nam5"
+  location_id = var.firestore_location
   type        = "FIRESTORE_NATIVE"
 
   concurrency_mode = "OPTIMISTIC"
+
+  app_engine_integration_mode = "Disabled"
 }
-```
