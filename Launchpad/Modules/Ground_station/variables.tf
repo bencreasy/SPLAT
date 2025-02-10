@@ -13,7 +13,11 @@ variable "region" {
   type        = string
   default     = "us-central1"
 }
-
+variable "deploy_functions" {
+  description = "to deploy, or not to deploy..."
+  type        = bool
+  default     = false
+}
 variable "function_memory" {
   description = "Memory allocation for Cloud Functions (MB)"
   type        = number
