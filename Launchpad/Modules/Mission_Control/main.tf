@@ -91,4 +91,3 @@ resource "google_pubsub_topic" "dead_letter" {
     purpose     = "dead-letter"
   }
 }
-```
