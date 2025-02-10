@@ -19,6 +19,16 @@ provider "google" {
   region  = var.region
 }
 
+module "ground_station" {
+  source = "../../modules/ground_station"
+
+  project_id           = var.project_id
+  environment         = var.environment
+  region              = var.region
+  telemetry_topic_id  = module.mission_control.telemetry_topic_id
+  device_state_topic_id = module.mission_control.device_state_topic_id
+}
+
 module "mission_control" {
   source = "../../modules/mission_control"
 
