@@ -39,3 +39,33 @@ variable "storage_class" {
   type        = string
   default     = "STANDARD"
 }
+
+variable "vpc_cidr" {
+  description = "The CIDR range for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"  # Default development VPC CIDR
+}
+
+variable "ground_station_cidrs" {
+  description = "List of CIDR ranges for ground stations"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]  # Default to allow all for development
+}
+
+variable "developer_group" {
+  description = "Email of the developers group"
+  type        = string
+  default     = "ben@ghostlab.net"  
+}
+
+variable "operator_group" {
+  description = "Email of the operators group"
+  type        = string
+  default     = "ben@ghostlab.net"  
+}
+
+variable "devops_group" {
+  description = "Email of the DevOps team group"
+  type        = string
+  default     = "ben@ghostlab.net" 
+}
