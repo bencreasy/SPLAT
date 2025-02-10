@@ -1,4 +1,3 @@
-```hcl
 # Mission Control - IoT Core and Pub/Sub Setup
 module "mission_control" {
   source = "./modules/mission_control"
@@ -36,4 +35,3 @@ module "security" {
   project_id   = var.project_id
   environment  = var.environment
 }
-```
