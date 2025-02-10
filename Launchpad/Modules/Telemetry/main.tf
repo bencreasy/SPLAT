@@ -51,7 +51,6 @@ resource "google_storage_bucket" "raw_data" {
       purpose = "raw-data"
     }
   }
-}
 
 # Firestore
 
