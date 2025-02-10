@@ -12,6 +12,31 @@ resource "google_storage_bucket" "function_source" {
   }
 }
 
+# Cloud Function source bucket
+resource "google_storage_bucket" "function_source" {
+  name     = "splat-functions-${var.environment}"
+  location = var.region
+  project  = var.project_id
+
+  uniform_bucket_level_access = true
+  versioning {
+    enabled = true
+  }
+}
+
+# Function ZIP files
+resource "google_storage_bucket_object" "function_zip" {
+  name   = "functions/data_processor-${filemd5("../../functions/data_processor.zip")}.zip"
+  bucket = google_storage_bucket.function_source.name
+  source = "../../functions/data_processor.zip"
+}
+
+resource "google_storage_bucket_object" "alert_zip" {
+  name   = "functions/alert_processor-${filemd5("../../functions/alert_processor.zip")}.zip"
+  bucket = google_storage_bucket.function_source.name
+  source = "../../functions/alert_processor.zip"
+}
+
 # Main data processing function
 resource "google_cloudfunctions_function" "data_processor" {
   name        = "splat-processor-${var.environment}"
