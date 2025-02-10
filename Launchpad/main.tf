@@ -18,6 +18,7 @@ module "ground_station" {
   environment       = var.environment
   telemetry_topic_id = module.mission_control.telemetry_topic_id
   device_state_topic_id   = module.mission_control.device_state_topic_id
+  deploy_functions    = false
 }
 
 # Telemetry - Storage and Database
