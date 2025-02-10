@@ -14,13 +14,13 @@ resource "google_storage_bucket" "function_source" {
 
 # Function ZIP files
 resource "google_storage_bucket_object" "function_zip" {
-  name   = "functions/data_processor-${filemd5("../../functions/data_processor.zip")}.zip"
+  name   = "function_source/data_processor-${filemd5("../../function_source/data_processor.zip")}.zip"
   bucket = google_storage_bucket.function_source.name
   source = "../../functions/data_processor.zip"
 }
 
 resource "google_storage_bucket_object" "alert_zip" {
-  name   = "functions/alert_processor-${filemd5("../../functions/alert_processor.zip")}.zip"
+  name   = "function_source/alert_processor-${filemd5("../../function_source/alert_processor.zip")}.zip"
   bucket = google_storage_bucket.function_source.name
   source = "../../functions/alert_processor.zip"
 }
