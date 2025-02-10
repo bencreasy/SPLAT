@@ -16,7 +16,7 @@ module "ground_station" {
   region            = var.region
   environment       = var.environment
   pubsub_topic_id   = module.mission_control.telemetry_topic_id
-  function_runtime  = "python39"
+  runtime  = "python39"
 }
 
 # Telemetry - Storage and Database
