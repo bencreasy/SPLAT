@@ -1,5 +1,4 @@
 ### modules/mission_control/main.tf
-```hcl
 # IoT Core Registry
 resource "google_cloudiot_registry" "splat_registry" {
   name     = "${var.iot_registry_id}-${var.environment}"
@@ -42,4 +41,3 @@ resource "google_pubsub_topic" "device_state" {
     environment = var.environment
   }
 }
-```
