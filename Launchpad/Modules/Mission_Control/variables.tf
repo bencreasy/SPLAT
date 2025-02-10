@@ -32,4 +32,5 @@ variable "log_level" {
 variable "device_certificate_path" {
   description = "Path to the device certificate file"
   type        = string
+  default = null # optional for development
 }
