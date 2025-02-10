@@ -62,7 +62,7 @@ resource "google_firestore_database" "splat_db" {
 
   concurrency_mode = "OPTIMISTIC"
 
-  app_engine_integration_mode = "Disabled"
+  app_engine_integration_mode = "DISABLED"
 }
 
 # BigQuery Dataset for Analytics
