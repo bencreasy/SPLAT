@@ -17,4 +17,3 @@ output "commands_topic_id" {
   description = "The ID of the commands topic"
   value       = google_pubsub_topic.commands.id
 }
-```
