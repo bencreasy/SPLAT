@@ -12,18 +12,6 @@ resource "google_storage_bucket" "function_source" {
   }
 }
 
-# Cloud Function source bucket
-resource "google_storage_bucket" "function_source" {
-  name     = "splat-functions-${var.environment}"
-  location = var.region
-  project  = var.project_id
-
-  uniform_bucket_level_access = true
-  versioning {
-    enabled = true
-  }
-}
-
 # Function ZIP files
 resource "google_storage_bucket_object" "function_zip" {
   name   = "functions/data_processor-${filemd5("../../functions/data_processor.zip")}.zip"
