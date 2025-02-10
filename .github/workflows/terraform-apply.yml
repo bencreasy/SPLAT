@@ -1,0 +1,60 @@
+name: 'Terraform Apply'
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'environments/**'
+      - 'modules/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform-apply:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.0.0
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Configure GCP Credentials
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        export_environment_variables: true
+
+    - name: Setup Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+
+    - name: Terraform Init
+      run: |
+        cd environments/${{ github.event.inputs.environment || 'dev' }}
+        terraform init
+
+    - name: Terraform Apply
+      run: |
+        cd environments/${{ github.event.inputs.environment || 'dev' }}
+        terraform apply -auto-approve
+      env:
+        TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
