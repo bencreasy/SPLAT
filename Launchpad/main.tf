@@ -27,6 +27,8 @@ module "telemetry" {
   project_id     = var.project_id
   environment    = var.environment
   storage_class  = var.storage_class
+  analyst_group_email = var.operator_group
+  service_account_email = var.operator_group
 }
 
 # Security - IAM and Authentication
