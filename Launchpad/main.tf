@@ -35,4 +35,9 @@ module "security" {
 
   project_id   = var.project_id
   environment  = var.environment
+  vpc_cidr           = var.vpc_cidr
+  ground_station_cidrs = var.ground_station_cidrs
+  developer_group     = var.developer_group
+  operator_group      = var.operator_group
+  devops_group        = var.devops_group
 }
