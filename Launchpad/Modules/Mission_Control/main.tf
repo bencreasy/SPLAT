@@ -22,7 +22,7 @@ resource "google_cloudiot_registry" "splat_registry" {
     public_key_certificate = {
       format      = "X509_CERTIFICATE_PEM"
       certificate = file(var.device_certificate_path)
-    }
+    } : null
   }
 }
 
