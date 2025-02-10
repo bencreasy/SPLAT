@@ -41,7 +41,7 @@ resource "google_storage_bucket" "raw_data" {
     condition {
       age = 7
     }
-    acton {
+    action {
       type = "Delete"
     }
     }
