@@ -1,5 +1,4 @@
 ### versions.tf
-```hcl
 terraform {
   required_version = ">= 1.0.0"
   required_providers {
@@ -13,4 +12,3 @@ terraform {
     }
   }
 }
-```
