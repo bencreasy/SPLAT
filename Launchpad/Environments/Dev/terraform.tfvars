@@ -1,4 +1,4 @@
-project_id      = "splat-dev"
+project_id      = "kinetic-abbey-450502-d6"
 environment     = "dev"
 region          = "us-central1"
 zone            = "us-central1-a"
