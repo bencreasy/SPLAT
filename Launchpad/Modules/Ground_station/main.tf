@@ -29,6 +29,7 @@ resource "google_storage_bucket_object" "alert_zip" {
 
 # Main data processing function
 resource "google_cloudfunctions_function" "data_processor" {
+  count       = var.deploy_functions ? 1 : 0
   name        = "splat-processor-${var.environment}"
   description = "Process incoming SPLAT telemetry data"
   runtime     = "python39"
@@ -53,6 +54,7 @@ resource "google_cloudfunctions_function" "data_processor" {
 
 # Alert processing function
 resource "google_cloudfunctions_function" "alert_processor" {
+  count       = var.deploy_functions ? 1 : 0
   name        = "splat-alerts-${var.environment}"
   description = "Process SPLAT alerts and notifications"
   runtime     = "python39"
