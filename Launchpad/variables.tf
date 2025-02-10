@@ -32,6 +32,7 @@ variable "device_certificate_path" {
   description = "Path to the device certificate file for IoT core"
   type  =  string
   default = null # optional for development
+}
 
 variable "storage_class" {
   description = "Storage class for buckets"
