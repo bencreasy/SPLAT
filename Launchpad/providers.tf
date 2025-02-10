@@ -1,12 +1,12 @@
-### providers.tf
+
 provider "google" {
-  project = var.project_id 
+  project = kinetic-abbey-450502-d6
   region  = var.region
   zone    = var.zone
 }
 
 provider "google-beta" {
-  project = var.project_id
+  project = kinetic-abbey-450502-d6
   region  = var.region
   zone    = var.zone
 }
