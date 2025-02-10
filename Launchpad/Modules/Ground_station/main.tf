@@ -16,9 +16,9 @@ resource "google_storage_bucket" "function_source" {
 resource "google_cloudfunctions_function" "data_processor" {
   name        = "splat-processor-${var.environment}"
   description = "Process incoming SPLAT telemetry data"
- # runtime     = "python39"
+  runtime     = "python39"
 
-  available_memory_mb   = var.function_memory
+  available_memory_mb   = 256
   source_archive_bucket = google_storage_bucket.function_source.name
   source_archive_object = google_storage_bucket_object.function_zip.name
   entry_point          = "process_telemetry"
