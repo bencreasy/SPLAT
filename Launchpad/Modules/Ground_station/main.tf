@@ -36,7 +36,7 @@ resource "google_cloudfunctions_function" "data_processor" {
 
   available_memory_mb   = 256
   source_archive_bucket = google_storage_bucket.function_source.name
-  source_archive_object = google_storage_bucket_object.function_zip.name
+  source_archive_object = google_storage_bucket_object.function_zip[count.index].name
   entry_point          = "process_telemetry"
   
   environment_variables = {
@@ -61,7 +61,7 @@ resource "google_cloudfunctions_function" "alert_processor" {
 
   available_memory_mb   = var.function_memory
   source_archive_bucket = google_storage_bucket.function_source.name
-  source_archive_object = google_storage_bucket_object.alert_zip.name
+  source_archive_object = google_storage_bucket_object.alert_zip[count.index].name
   entry_point          = "process_alert"
 
   environment_variables = {
