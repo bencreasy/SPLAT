@@ -1,0 +1,81 @@
+// launchpad/modules/telemetry/schemas/device_telemetry.json
+[
+  {
+    "name": "timestamp",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Time of measurement"
+  },
+  {
+    "name": "device_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique identifier for the device"
+  },
+  {
+    "name": "metric_type",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Type of measurement (moisture, temperature, etc.)"
+  },
+  {
+    "name": "value",
+    "type": "FLOAT",
+    "mode": "REQUIRED",
+    "description": "Measured value"
+  },
+  {
+    "name": "raw_metrics",
+    "type": "RECORD",
+    "mode": "NULLABLE",
+    "fields": [
+      {
+        "name": "solar_voltage",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "solar_current",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "battery_voltage",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "system_current",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "temperature",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  {
+    "name": "metadata",
+    "type": "RECORD",
+    "mode": "NULLABLE",
+    "fields": [
+      {
+        "name": "location",
+        "type": "GEOGRAPHY",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "error_count",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "uptime",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      }
+    ]
+  }
+]
