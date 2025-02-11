@@ -6,7 +6,7 @@ module "mission_control" {
   region          = var.region
   environment     = var.environment
   iot_registry_id = var.iot_registry_id
-  device_certificate_path = var.device_certificate_path
+  device_certificate_path = "${path.module}/certs/splat_dev.pem"
 }
 
 # Ground Station - Functions and Processing
