@@ -21,7 +21,7 @@ resource "google_cloudiot_registry" "splat_registry" {
   credentials {
     public_key_certificate = {
       format      = "X509_CERTIFICATE_PEM"
-      certificate = file(var.device_certificate_path)
+      certificate = "${path.module}/certs/splat_dev.pem"
     }
   }
 }
