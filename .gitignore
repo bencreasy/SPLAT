@@ -1,0 +1,3 @@
+.json # ignore ALL .json files
+
+/certs # Ignore certs folder
