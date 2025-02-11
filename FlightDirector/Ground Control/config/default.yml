@@ -1,0 +1,40 @@
+# System-wide configuration
+system:
+  name: "ground_control"
+  version: "0.1.0"
+  environment: "development"
+  time_zone: "UTC"
+  log_level: "INFO"
+  data_dir: "/data/ground_control"
+
+# Network configuration
+network:
+  hostname: "splat-gc-${DEVICE_ID}"
+  wifi:
+    enabled: false
+    ssid: ""
+    psk: ""
+  ethernet:
+    enabled: true
+    dhcp: true
+    static_ip: ""
+    gateway: ""
+    dns: []
+
+# Security settings
+security:
+  encryption_key: "${ENCRYPTION_KEY}"
+  allow_remote_access: false
+  allowed_ips: []
+  ssh:
+    enabled: true
+    port: 22
+    allow_password: false
+    allow_key_auth: true
+
+# Update settings
+updates:
+  auto_update: true
+  check_interval: 86400  # 24 hours
+  update_hour: 3        # 3 AM
+  backup_before_update: true
