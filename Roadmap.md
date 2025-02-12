@@ -242,24 +242,24 @@ Security:
 ## Timeline
 
 ```yaml
-Week 1:
+Phase 1:
   - Hardware procurement
   - Development environment setup
   - Initial component testing
 
-Week 2:
+Phase 2:
   - Ground Control assembly
   - Software deployment
   - Integration testing
   - Security implementation
 
-Week 3:
+Phase 3:
   - Test node preparation
   - System integration
   - Field site setup
   - Pre-deployment testing
 
-Week 4:
+Phase 4:
   - Flight 1 deployment
   - 72-hour test campaign
   - Data analysis
