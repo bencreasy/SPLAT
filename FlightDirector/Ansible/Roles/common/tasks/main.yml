@@ -1,0 +1,29 @@
+- name: Update system packages
+  apt:
+    update_cache: yes
+    cache_valid_time: "{{ update_cache_valid_time }}"
+    
+- name: Install required system packages
+  apt:
+    name: "{{ system_packages }}"
+    state: present
+    
+- name: Set timezone
+  timezone:
+    name: "{{ timezone }}"
+    
+- name: Configure locale
+  locale_gen:
+    name: "{{ locale }}"
+    state: present
+
+- name: Create SPLAT directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ splat_base_path }}"
+    - "{{ ground_control_data_path }}"
+    - "{{ ground_control_config_path }}"
+    - "{{ ground_control_logs_path }}"
