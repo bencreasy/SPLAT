@@ -1,0 +1,36 @@
+- name: Install monitoring stack
+  docker_compose:
+    project_src: "{{ splat_base_path }}"
+    services:
+      - prometheus
+      - grafana
+      - node-exporter
+    state: present
+  when: monitoring_enabled | bool
+
+- name: Configure Prometheus
+  template:
+    src: prometheus.yml.j2
+    dest: "{{ ground_control_config_path }}/prometheus.yml"
+    mode: '0644'
+  notify: Restart Prometheus
+  when: monitoring_enabled | bool
+
+- name: Configure Grafana
+  template:
+    src: grafana.ini.j2
+    dest: "{{ ground_control_config_path }}/grafana.ini"
+    mode: '0644'
+  notify: Restart Grafana
+  when: monitoring_enabled | bool
+
+- name: Deploy Grafana dashboards
+  copy:
+    src: "dashboards/{{ item }}"
+    dest: "{{ ground_control_config_path }}/dashboards/"
+    mode: '0644'
+  with_items:
+    - ground_control.json
+    - lora_metrics.json
+    - system_metrics.json
+  when: monitoring_enabled | bool
