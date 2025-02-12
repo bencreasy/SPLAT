@@ -1,7 +1,7 @@
 
 # SPLAT Ground Systems 🛰️
 
-SPLAT (Soil Permeability & Logging Analyitics Transponder) Ground Systems provides the infrastructure and configuration management for SPLAT's backend operations.
+SPLAT (Soil Permeability Logging Analyitics Transponder) Ground Systems provides the infrastructure and configuration management for SPLAT's backend operations.
 
 ## Overview
 
