@@ -1,0 +1,25 @@
+# Monitoring specific variables
+monitoring_role:
+  prometheus:
+    config_template: "prometheus.yml.j2"
+    rules_template: "prometheus_rules.yml.j2"
+    storage_path: "{{ ground_control.data_path }}/prometheus"
+    
+  grafana:
+    config_template: "grafana.ini.j2"
+    provisioning_path: "{{ ground_control.config_path }}/grafana/provisioning"
+    dashboards_path: "{{ ground_control.config_path }}/grafana/dashboards"
+    datasources:
+      - name: "Prometheus"
+        type: "prometheus"
+        url: "http://prometheus:9090"
+        access: "proxy"
+        is_default: true
+
+  dashboards:
+    - name: "Ground Control Overview"
+      file: "ground_control.json"
+    - name: "LoRa Metrics"
+      file: "lora_metrics.json"
+    - name: "System Metrics"
+      file: "system_metrics.json"
