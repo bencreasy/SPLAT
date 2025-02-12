@@ -1,0 +1,20 @@
+# Ground Control specific variables
+ground_control_role:
+  services:
+    - name: "ground-control"
+      image: "{{ ground_control.image }}"
+      container_name: "{{ ground_control.container_name }}"
+      ports:
+        - "{{ ground_control.port }}:8000"
+      volumes:
+        - "{{ ground_control.data_path }}:/data"
+        - "{{ ground_control.config_path }}:/config"
+        - "{{ ground_control.logs_path }}:/logs"
+      environment: "{{ ground_control.environment }}"
+      restart: "{{ docker_settings.restart_policy }}"
+
+  config_templates:
+    - src: "ground_control.yml.j2"
+      dest: "{{ ground_control.config_path }}/config.yml"
+    - src: "lora.yml.j2"
+      dest: "{{ ground_control.config_path }}/lora.yml"
