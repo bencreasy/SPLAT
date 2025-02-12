@@ -1,0 +1,71 @@
+# src/ansible/playbooks/site.yml
+---
+- name: Deploy SPLAT Ground Control Station
+  hosts: ground_control
+  become: yes
+  
+  pre_tasks:
+    - name: Load deployment variables
+      include_vars:
+        file: "{{ deployment_vars_file | default('vars/main.yml') }}"
+        
+    - name: Update package cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+      
+    - name: Verify system requirements
+      assert:
+        that:
+          - ansible_memtotal_mb >= 2048
+          - ansible_architecture == "aarch64" or ansible_architecture == "armv7l"
+        msg: "System does not meet minimum requirements"
+
+  roles:
+    - role: common
+      tags: ['common', 'setup']
+      
+    - role: security
+      tags: ['security', 'setup']
+      
+    - role: docker
+      tags: ['docker', 'setup']
+      
+    - role: lora
+      tags: ['lora', 'radio']
+      
+    - role: ground_control
+      tags: ['ground_control', 'application']
+      
+    - role: monitoring
+      tags: ['monitoring', 'observability']
+
+  post_tasks:
+    - name: Verify Ground Control services
+      uri:
+        url: "http://localhost:{{ ground_control_port }}/health"
+        return_content: yes
+      register: health_check
+      until: health_check.status == 200
+      retries: 6
+      delay: 10
+      tags: ['verify']
+      
+    - name: Store deployment information
+      copy:
+        content: |
+          deployment_id: {{ deployment_id }}
+          timestamp: {{ ansible_date_time.iso8601 }}
+          version: {{ ground_control_version }}
+        dest: /opt/splat/deployment-info.yml
+        mode: '0644'
+      tags: ['verify']
+
+  handlers:
+    - name: Restart Ground Control
+      docker_compose:
+        project_src: /opt/splat
+        state: restarted
+        services:
+          - ground_control
