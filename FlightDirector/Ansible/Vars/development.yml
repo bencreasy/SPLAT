@@ -1,0 +1,17 @@
+environment: "development"
+log_level: "DEBUG"
+
+ground_control:
+  environment:
+    DEVELOPMENT_MODE: "true"
+    DEBUG: "true"
+
+monitoring:
+  prometheus:
+    retention_days: 7
+  grafana:
+    allow_anonymous: true
+
+deployment:
+  backup:
+    enabled: false
