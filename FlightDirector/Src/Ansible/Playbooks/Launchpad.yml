@@ -1,0 +1,67 @@
+# src/ansible/playbooks/launchpad.yml
+---
+- name: Deploy SPLAT LaunchPad
+  hosts: ground_control
+  become: yes
+  
+  pre_tasks:
+    - name: Load LaunchPad variables
+      include_vars:
+        file: "{{ launchpad_vars_file | default('vars/launchpad.yml') }}"
+        
+    - name: Verify LaunchPad prerequisites
+      assert:
+        that:
+          - launchpad_key is defined
+          - gcp_project_id is defined
+          - gcp_region is defined
+        msg: "Missing required LaunchPad variables"
+        
+    - name: Setup GCP authentication
+      block:
+        - name: Create credentials directory
+          file:
+            path: /opt/splat/credentials
+            state: directory
+            mode: '0700'
+            
+        - name: Copy LaunchPad key
+          copy:
+            content: "{{ launchpad_key | from_json | to_nice_json }}"
+            dest: /opt/splat/credentials/launchkey.json
+            mode: '0600'
+          no_log: true
+
+  roles:
+    - role: launchpad
+      tags: ['launchpad', 'infrastructure']
+      vars:
+        terraform_version: "{{ launchpad_terraform_version }}"
+        environment: "{{ launchpad_environment }}"
+
+  post_tasks:
+    - name: Verify LaunchPad deployment
+      command: terraform output
+      args:
+        chdir: /opt/splat/launchpad
+      register: terraform_output
+      changed_when: false
+      
+    - name: Store LaunchPad state
+      copy:
+        content: |
+          deployment_id: {{ deployment_id }}
+          environment: {{ launchpad_environment }}
+          timestamp: {{ ansible_date_time.iso8601 }}
+          terraform_version: {{ launchpad_terraform_version }}
+        dest: /opt/splat/launchpad-info.yml
+        mode: '0644'
+        
+    - name: Configure Ground Control for LaunchPad
+      include_tasks: tasks/configure_ground_control.yml
+      
+  handlers:
+    - name: Refresh LaunchPad state
+      command: terraform refresh
+      args:
+        chdir: /opt/splat/launchpad
