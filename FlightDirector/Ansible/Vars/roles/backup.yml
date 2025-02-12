@@ -1,0 +1,22 @@
+# Backup specific variables
+backup_role:
+  paths_to_backup:
+    - "{{ ground_control.config_path }}"
+    - "{{ ground_control.data_path }}/db"
+    - "{{ ground_control.logs_path }}"
+  
+  exclude_patterns:
+    - "*.tmp"
+    - "*.log"
+    - "temp/*"
+  
+  backup_script_template: "backup.sh.j2"
+  cleanup_script_template: "cleanup.sh.j2"
+  
+  compression: "gzip"
+  compression_level: 6
+  
+  retention:
+    daily: 7
+    weekly: 4
+    monthly: 3
