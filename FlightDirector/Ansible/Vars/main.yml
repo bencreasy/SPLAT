@@ -1,0 +1,96 @@
+# Main variable definitions
+splat_version: "0.1.0"
+deployment_timestamp: "{{ ansible_date_time.iso8601 }}"
+
+# System Configuration
+system_requirements:
+  min_memory_mb: 2048
+  min_disk_gb: 32
+  architecture:
+    - aarch64
+    - armv7l
+
+system_packages:
+  - python3-pip
+  - python3-venv
+  - git
+  - docker.io
+  - nginx
+  - curl
+  - jq
+  - htop
+  - iotop
+  - net-tools
+
+# Docker Configuration
+docker_settings:
+  compose_version: "2.17.2"
+  registry: "gcr.io"
+  image_prefix: "splat-project"
+  default_tag: "latest"
+  network_name: "splat-network"
+  restart_policy: "unless-stopped"
+
+# Ground Control Configuration
+ground_control:
+  image: "{{ docker_settings.registry }}/{{ docker_settings.image_prefix }}/ground-control:{{ docker_settings.default_tag }}"
+  container_name: "splat-ground-control"
+  port: 8000
+  data_path: "/opt/splat/data"
+  config_path: "/opt/splat/config"
+  logs_path: "/opt/splat/logs"
+  environment:
+    LOG_LEVEL: "{{ log_level | default('INFO') }}"
+    GCP_PROJECT_ID: "{{ gcp_project_id }}"
+    GCP_REGION: "{{ gcp_region }}"
+
+# LoRa Configuration
+lora:
+  device: "/dev/spidev0.0"
+  reset_pin: 25
+  frequency: 915.0
+  bandwidth: 125000
+  spreading_factor: 7
+  tx_power: 20
+  sync_word: 0x42
+
+# Monitoring Configuration
+monitoring:
+  prometheus:
+    image: "prom/prometheus:v2.42.0"
+    port: 9090
+    retention_days: 15
+    scrape_interval: "15s"
+    evaluation_interval: "15s"
+  
+  grafana:
+    image: "grafana/grafana:9.4.7"
+    port: 3000
+    admin_user: "admin"
+    plugins:
+      - grafana-clock-panel
+      - grafana-simple-json-datasource
+  
+  node_exporter:
+    image: "prom/node-exporter:v1.5.0"
+    port: 9100
+
+# Deployment Configuration
+deployment:
+  timeout: 600
+  health_check:
+    retries: 6
+    delay: 10
+  backup:
+    enabled: true
+    retention_days: 30
+    path: "/opt/splat/backups"
+
+# Network Configuration
+network:
+  timeout: 30
+  connection_retries: 3
+  allowed_ports:
+    - "{{ ground_control.port }}"
+    - "{{ monitoring.grafana.port }}"
+    - 22  # SSH
