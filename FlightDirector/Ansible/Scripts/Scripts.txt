@@ -1,0 +1,333 @@
+# scripts/install.sh
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Configuration
+PYTHON_VERSION="3.9"
+VENV_PATH="venv"
+REQUIREMENTS_FILE="requirements.txt"
+CONFIG_TEMPLATE="config/default.yml"
+
+log() {
+    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')] $1${NC}"
+}
+
+error() {
+    echo -e "${RED}[ERROR] $1${NC}" >&2
+    exit 1
+}
+
+warn() {
+    echo -e "${YELLOW}[WARNING] $1${NC}"
+}
+
+check_prerequisites() {
+    log "Checking prerequisites..."
+    
+    # Check Python version
+    if ! command -v python${PYTHON_VERSION} &> /dev/null; then
+        error "Python ${PYTHON_VERSION} is required but not installed"
+    fi
+    
+    # Check pip
+    if ! command -v pip3 &> /dev/null; then
+        error "pip3 is required but not installed"
+    fi
+    
+    # Check ansible
+    if ! command -v ansible &> /dev/null; then
+        error "Ansible is required but not installed"
+    }
+    
+    log "Prerequisites check passed"
+}
+
+setup_virtual_environment() {
+    log "Setting up virtual environment..."
+    
+    python${PYTHON_VERSION} -m venv ${VENV_PATH}
+    source ${VENV_PATH}/bin/activate
+    
+    pip install --upgrade pip
+    pip install -r ${REQUIREMENTS_FILE}
+    
+    log "Virtual environment setup complete"
+}
+
+initialize_configuration() {
+    log "Initializing configuration..."
+    
+    if [ ! -f ${CONFIG_TEMPLATE} ]; then
+        error "Configuration template not found: ${CONFIG_TEMPLATE}"
+    fi
+    
+    # Create configuration directory
+    mkdir -p config
+    
+    # Copy configuration template
+    cp ${CONFIG_TEMPLATE} config/config.yml
+    
+    log "Configuration initialized"
+}
+
+main() {
+    log "Starting Flight Director installation..."
+    
+    check_prerequisites
+    setup_virtual_environment
+    initialize_configuration
+    
+    log "Installation complete"
+}
+
+main "$@"
+
+# scripts/deploy.sh
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Configuration
+ANSIBLE_PATH="ansible"
+INVENTORY_FILE="${ANSIBLE_PATH}/inventory/ground_control.yml"
+PLAYBOOK_FILE="${ANSIBLE_PATH}/playbooks/site.yml"
+
+# Parse command line arguments
+parse_args() {
+    while getopts "e:s:h" opt; do
+        case ${opt} in
+            e)
+                ENVIRONMENT=$OPTARG
+                ;;
+            s)
+                STATION_ID=$OPTARG
+                ;;
+            h)
+                show_usage
+                exit 0
+                ;;
+            \?)
+                error "Invalid option: -$OPTARG"
+                ;;
+        esac
+    done
+    
+    if [ -z "${ENVIRONMENT:-}" ]; then
+        error "Environment (-e) is required"
+    fi
+    
+    if [ -z "${STATION_ID:-}" ]; then
+        error "Station ID (-s) is required"
+    fi
+}
+
+deploy_ground_control() {
+    log "Deploying Ground Control station ${STATION_ID} in ${ENVIRONMENT} environment..."
+    
+    # Run ansible playbook
+    ansible-playbook ${PLAYBOOK_FILE} \
+        -i ${INVENTORY_FILE} \
+        --limit ${STATION_ID} \
+        -e "environment=${ENVIRONMENT}" \
+        --ask-vault-pass
+        
+    log "Deployment complete"
+}
+
+show_usage() {
+    cat << EOF
+Usage: $0 -e ENVIRONMENT -s STATION_ID
+
+Options:
+    -e ENVIRONMENT   Deployment environment (development|staging|production)
+    -s STATION_ID    Ground Control station ID
+    -h              Show this help message
+EOF
+}
+
+main() {
+    parse_args "$@"
+    deploy_ground_control
+}
+
+main "$@"
+
+# scripts/generate_keys.sh
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Configuration
+KEYS_DIR="keys"
+DEPLOYMENT_ID=${1:-""}
+
+generate_deployment_keys() {
+    local deployment_dir="${KEYS_DIR}/deployments/${DEPLOYMENT_ID}"
+    
+    log "Generating keys for deployment ${DEPLOYMENT_ID}..."
+    
+    # Create deployment directory
+    mkdir -p "${deployment_dir}"
+    
+    # Generate RSA key pair
+    openssl genpkey -algorithm RSA -out "${deployment_dir}/private.pem" -pkeyopt rsa_keygen_bits:2048
+    openssl rsa -pubout -in "${deployment_dir}/private.pem" -out "${deployment_dir}/public.pem"
+    
+    # Generate encryption key
+    openssl rand -base64 32 > "${deployment_dir}/encryption.key"
+    
+    # Set appropriate permissions
+    chmod 600 "${deployment_dir}/private.pem"
+    chmod 644 "${deployment_dir}/public.pem"
+    chmod 600 "${deployment_dir}/encryption.key"
+    
+    log "Keys generated successfully"
+}
+
+show_usage() {
+    cat << EOF
+Usage: $0 DEPLOYMENT_ID
+
+Generates necessary keys for a Flight Director deployment.
+EOF
+}
+
+main() {
+    if [ -z "${DEPLOYMENT_ID}" ]; then
+        error "Deployment ID is required"
+    fi
+    
+    generate_deployment_keys
+}
+
+main "$@"
+
+# scripts/backup.sh
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Configuration
+BACKUP_DIR="/opt/splat/backups"
+DATA_DIR="/opt/splat/data"
+CONFIG_DIR="/opt/splat/config"
+RETENTION_DAYS=30
+
+create_backup() {
+    local timestamp=$(date +%Y%m%d_%H%M%S)
+    local backup_file="${BACKUP_DIR}/splat_backup_${timestamp}.tar.gz"
+    
+    log "Creating backup..."
+    
+    # Create backup directory if it doesn't exist
+    mkdir -p "${BACKUP_DIR}"
+    
+    # Create tar archive
+    tar -czf "${backup_file}" \
+        -C "${DATA_DIR}" . \
+        -C "${CONFIG_DIR}" .
+        
+    log "Backup created: ${backup_file}"
+}
+
+cleanup_old_backups() {
+    log "Cleaning up old backups..."
+    
+    find "${BACKUP_DIR}" -name "splat_backup_*.tar.gz" -mtime +${RETENTION_DAYS} -delete
+    
+    log "Cleanup complete"
+}
+
+main() {
+    create_backup
+    cleanup_old_backups
+}
+
+main "$@"
+
+# scripts/status.sh
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Configuration
+STATION_ID=${1:-""}
+
+check_station_status() {
+    log "Checking status of station ${STATION_ID}..."
+    
+    # Check if station is responding
+    if curl -sf "http://${STATION_ID}:8000/health" > /dev/null; then
+        log "Station ${STATION_ID} is healthy"
+        
+        # Get detailed status
+        curl -s "http://${STATION_ID}:8000/status" | jq .
+    else
+        error "Station ${STATION_ID} is not responding"
+    fi
+}
+
+show_usage() {
+    cat << EOF
+Usage: $0 STATION_ID
+
+Checks the status of a Ground Control station.
+EOF
+}
+
+main() {
+    if [ -z "${STATION_ID}" ]; then
+        error "Station ID is required"
+    fi
+    
+    check_station_status
+}
+
+main "$@"
+
+# scripts/update.sh
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Configuration
+STATION_ID=${1:-""}
+ANSIBLE_PATH="ansible"
+PLAYBOOK_FILE="${ANSIBLE_PATH}/playbooks/update.yml"
+
+update_station() {
+    log "Updating station ${STATION_ID}..."
+    
+    ansible-playbook ${PLAYBOOK_FILE} \
+        -i ${ANSIBLE_PATH}/inventory/ground_control.yml \
+        --limit ${STATION_ID} \
+        --tags update \
+        --ask-vault-pass
+        
+    log "Update complete"
+}
+
+show_usage() {
+    cat << EOF
+Usage: $0 STATION_ID
+
+Updates a Ground Control station to the latest version.
+EOF
+}
+
+main() {
+    if [ -z "${STATION_ID}" ]; then
+        error "Station ID is required"
+    fi
+    
+    update_station
+}
+
+main "$@"
