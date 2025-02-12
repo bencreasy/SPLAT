@@ -1,3 +1,280 @@
+# Initial Development Requirements - Flight 1
+
+## Ground Control v0.1
+
+### Hardware Requirements
+```yaml
+Core Components:
+  Computer:
+    - Raspberry Pi 4B (4GB minimum)
+    - 32GB High-endurance SD card
+    - Proper power supply (3A)
+    - Heat management
+
+  LoRa:
+    - RAK2287 concentrator
+    - External antenna
+    - Proper mounting
+    - SPI interface
+
+  Monitoring:
+    - Status LEDs
+    - Small display (optional)
+    - Basic sensors
+    - Power monitoring
+```
+
+### Software Architecture
+```yaml
+Core Services:
+  LoRa Handler:
+    - Packet reception
+    - Basic validation
+    - Quick response
+    - Signal monitoring
+
+  Data Manager:
+    - Local buffering
+    - Basic processing
+    - Storage management
+    - Cloud sync
+
+  Status Monitor:
+    - System health
+    - Node tracking
+    - Error logging
+    - Basic display
+
+Components:
+  /ground_control/
+    ├── core/
+    │   ├── lora_handler.py
+    │   ├── data_manager.py
+    │   └── status_monitor.py
+    ├── utils/
+    │   ├── packet_validator.py
+    │   ├── storage.py
+    │   └── cloud_sync.py
+    └── config/
+        ├── system.yaml
+        └── nodes.yaml
+```
+
+### Minimal Feature Set
+```yaml
+Essential Functions:
+  Node Management:
+    - Basic registration
+    - Health tracking
+    - Status updates
+    - Simple alerts
+
+  Data Handling:
+    - Packet validation
+    - Local storage
+    - Basic processing
+    - Cloud forwarding
+
+  System Health:
+    - Status monitoring
+    - Error detection
+    - Basic recovery
+    - LED indicators
+```
+
+## Flight Director v0.1
+
+### Core Components
+```yaml
+Infrastructure Management:
+  - Node registration
+  - Configuration control
+  - Basic monitoring
+  - Alert handling
+
+Deployment:
+  Location: GCP
+  Services:
+    - Cloud Functions
+    - Pub/Sub
+    - Cloud Storage
+    - Firestore
+
+Components:
+  /flight_director/
+    ├── deployment/
+    │   ├── terraform/
+    │   └── ansible/
+    ├── functions/
+    │   ├── node_manager/
+    │   ├── data_processor/
+    │   └── alert_handler/
+    └── config/
+        ├── nodes/
+        └── system/
+```
+
+### Essential Features
+```yaml
+Base Functionality:
+  Node Management:
+    - Registration
+    - Configuration
+    - Status tracking
+    - Health monitoring
+
+  Data Processing:
+    - Telemetry storage
+    - Basic analysis
+    - Alert generation
+    - Status updates
+
+  Deployment:
+    - GC configuration
+    - Basic automation
+    - Status monitoring
+    - Error handling
+```
+
+## Flight 1 Test Requirements
+
+### Test Node (SPLAT Hopper)
+```yaml
+Hardware Setup:
+  - ESP32 development board
+  - LoRa transceiver
+  - Power monitoring
+  - Basic sensors
+
+Software Requirements:
+  - Power monitoring
+  - Basic telemetry
+  - Status reporting
+  - Error detection
+
+Test Parameters:
+  Duration: 72 hours
+  Metrics:
+    - Power consumption
+    - Signal quality
+    - Data reliability
+    - System stability
+```
+
+### Test Protocol
+```yaml
+Test Sequence:
+  1. Initial Setup:
+     - GC deployment
+     - Node registration
+     - System verification
+     - Baseline readings
+
+  2. Normal Operation:
+     - Regular telemetry
+     - Status monitoring
+     - Data validation
+     - Performance tracking
+
+  3. Solar Test:
+     - Charging monitoring
+     - Power management
+     - Efficiency tracking
+     - Status updates
+
+  4. Battery Test:
+     - Discharge monitoring
+     - Power estimation
+     - Critical alerts
+     - Shutdown sequence
+```
+
+### Success Criteria
+```yaml
+Minimum Requirements:
+  Ground Control:
+    - Stable operation
+    - Data collection
+    - Local storage
+    - Basic monitoring
+
+  Flight Director:
+    - Node management
+    - Data processing
+    - Alert handling
+    - Basic automation
+
+  SPLAT Node:
+    - Power monitoring
+    - Data transmission
+    - Status reporting
+    - Basic operation
+```
+
+## Development Priorities
+
+### Phase 1: Core Setup
+```yaml
+Ground Control:
+  1. Basic LoRa setup
+  2. Data storage
+  3. Status monitoring
+  4. Cloud connection
+
+Flight Director:
+  1. Node registration
+  2. Data processing
+  3. Basic automation
+  4. Alert handling
+```
+
+### Phase 2: Integration
+```yaml
+System Tests:
+  1. Communication
+  2. Data flow
+  3. Power monitoring
+  4. Alert system
+
+Validation:
+  1. System stability
+  2. Data integrity
+  3. Performance metrics
+  4. Error handling
+```
+
+## Documentation Requirements
+
+### Technical Documentation
+```yaml
+Core Documents:
+  - System architecture
+  - Setup procedures
+  - Test protocols
+  - Operation guide
+
+Development:
+  - API documentation
+  - Code comments
+  - Test procedures
+  - Debug guides
+```
+
+### Test Documentation
+```yaml
+Required Records:
+  - Test configurations
+  - Performance data
+  - Error logs
+  - Results analysis
+
+Reporting:
+  - System performance
+  - Data quality
+  - Issues found
+  - Recommendations
+```
+
 # Flight Director Requirements Specification
 
 ## Core Functions
