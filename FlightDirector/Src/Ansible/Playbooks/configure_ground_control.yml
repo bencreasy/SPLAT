@@ -1,0 +1,59 @@
+# src/ansible/playbooks/tasks/configure_ground_control.yml
+---
+- name: Configure Ground Control for LaunchPad integration
+  block:
+    - name: Create Ground Control configuration directory
+      file:
+        path: /opt/splat/config
+        state: directory
+        mode: '0755'
+        
+    - name: Generate Ground Control configuration
+      template:
+        src: templates/ground_control.yml.j2
+        dest: /opt/splat/config/ground_control.yml
+        mode: '0644'
+      vars:
+        gcp_project_id: "{{ gcp_project_id }}"
+        gcp_region: "{{ gcp_region }}"
+        iot_registry: "{{ terraform_output.iot_registry.value }}"
+        pubsub_topic: "{{ terraform_output.telemetry_topic.value }}"
+        
+    - name: Configure LoRa settings
+      template:
+        src: templates/lora.yml.j2
+        dest: /opt/splat/config/lora.yml
+        mode: '0644'
+      vars:
+        frequency: "{{ lora_frequency }}"
+        bandwidth: "{{ lora_bandwidth }}"
+        spreading_factor: "{{ lora_spreading_factor }}"
+        
+    - name: Configure monitoring
+      template:
+        src: templates/monitoring.yml.j2
+        dest: /opt/splat/config/monitoring.yml
+        mode: '0644'
+      vars:
+        metrics_endpoint: "{{ terraform_output.metrics_endpoint.value }}"
+        log_level: "{{ log_level | default('INFO') }}"
+        
+    - name: Update Docker Compose configuration
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /opt/splat/docker-compose.yml
+        mode: '0644'
+      notify: Restart Ground Control
+
+  rescue:
+    - name: Record configuration failure
+      copy:
+        content: |
+          error: Failed to configure Ground Control
+          timestamp: {{ ansible_date_time.iso8601 }}
+        dest: /opt/splat/configuration-error.yml
+        mode: '0644'
+        
+    - name: Fail configuration
+      fail:
+        msg: "Failed to configure Ground Control for LaunchPad integration"
