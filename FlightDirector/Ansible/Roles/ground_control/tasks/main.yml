@@ -1,0 +1,35 @@
+- name: Pull Ground Control images
+  docker_compose:
+    project_src: "{{ splat_base_path }}"
+    build: no
+    pull: yes
+  tags: ['docker']
+
+- name: Configure Ground Control
+  template:
+    src: ground_control.yml.j2
+    dest: "{{ ground_control_config_path }}/config.yml"
+    mode: '0644'
+  notify: Restart Ground Control
+
+- name: Deploy Docker Compose configuration
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ splat_base_path }}/docker-compose.yml"
+    mode: '0644'
+  notify: Restart Ground Control
+
+- name: Start Ground Control services
+  docker_compose:
+    project_src: "{{ splat_base_path }}"
+    state: present
+  tags: ['docker']
+
+- name: Wait for Ground Control to be ready
+  uri:
+    url: "http://localhost:{{ ground_control_port }}/health"
+    return_content: yes
+  register: health_check
+  until: health_check.status == 200
+  retries: "{{ health_check_retries }}"
+  delay: "{{ health_check_delay }}"
