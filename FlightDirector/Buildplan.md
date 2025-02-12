@@ -1236,3 +1236,308 @@ class HealthMonitor:
             }
         ))
 ```
+
+
+# SPLAT LaunchPad - Repository Structure
+
+## Repository Layout
+```
+splat-launchpad/
+├── .github/
+│   ├── workflows/
+│   │   ├── terraform-plan.yml
+│   │   └── terraform-apply.yml
+│   └── CODEOWNERS
+├── environments/
+│   ├── dev/
+│   │   ├── backend.tf
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── terraform.tfvars.example
+│   ├── staging/
+│   │   └── ...
+│   └── prod/
+│       └── ...
+├── modules/
+│   ├── mission_control/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   └── README.md
+│   ├── ground_station/
+│   │   └── ...
+│   ├── telemetry/
+│   │   └── ...
+│   └── security/
+│       └── ...
+├── scripts/
+│   ├── tf-init.sh
+│   └── tf-cleanup.sh
+├── .gitignore
+├── .terraform-version
+├── LICENSE
+└── README.md
+```
+
+## Key Configuration Files
+
+### .gitignore
+```gitignore
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude sensitive variables files
+*.tfvars
+!*.tfvars.example
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Exclude sensitive key files
+*.pem
+*.key
+credentials.json
+
+# OS specific
+.DS_Store
+.vscode/
+```
+
+### .github/workflows/terraform-plan.yml
+```yaml
+name: 'Terraform Plan'
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  terraform:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.0
+
+    - name: Configure GCP Credentials
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Terraform Init
+      run: |
+        cd environments/dev
+        terraform init
+
+    - name: Terraform Format
+      run: terraform fmt -check -recursive
+
+    - name: Terraform Plan
+      run: |
+        cd environments/dev
+        terraform plan -no-color
+      env:
+        TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+```
+
+### environments/dev/main.tf
+```hcl
+terraform {
+  required_version = ">= 1.0.0"
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 4.0"
+    }
+  }
+
+  backend "gcs" {
+    bucket = "splat-terraform-state-dev"
+    prefix = "terraform/state"
+  }
+}
+
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+module "mission_control" {
+  source = "../../modules/mission_control"
+
+  project_id      = var.project_id
+  environment     = var.environment
+  iot_registry_id = var.iot_registry_id
+}
+
+# Additional modules...
+```
+
+### environments/dev/terraform.tfvars.example
+```hcl
+project_id      = "splat-dev-xxxxx"
+region          = "us-central1"
+environment     = "dev"
+iot_registry_id = "splat-devices"
+```
+
+## Module Structure Example
+
+### modules/mission_control/main.tf
+```hcl
+resource "google_cloudiot_registry" "splat_registry" {
+  name     = "${var.iot_registry_id}-${var.environment}"
+  region   = var.region
+  project  = var.project_id
+
+  event_notification_configs {
+    pubsub_topic_name = google_pubsub_topic.telemetry.id
+  }
+
+  state_notification_config = {
+    pubsub_topic_name = google_pubsub_topic.device_state.id
+  }
+}
+
+# Additional resources...
+```
+
+### modules/mission_control/variables.tf
+```hcl
+variable "project_id" {
+  description = "The GCP project ID"
+  type        = string
+}
+
+variable "environment" {
+  description = "The environment (dev, staging, prod)"
+  type        = string
+}
+
+variable "iot_registry_id" {
+  description = "The IoT Core registry ID"
+  type        = string
+}
+```
+
+## Setup Instructions
+
+1. Initial Repository Setup
+```bash
+# Clone the repository
+git clone https://github.com/your-org/splat-launchpad.git
+cd splat-launchpad
+
+# Create development branch
+git checkout -b develop
+
+# Create environment-specific configuration
+cp environments/dev/terraform.tfvars.example environments/dev/terraform.tfvars
+```
+
+2. GitHub Repository Settings
+- Enable branch protection on `main`
+- Require pull request reviews
+- Enable status checks
+- Configure CODEOWNERS
+
+3. GitHub Secrets Configuration
+```yaml
+Required Secrets:
+  GCP_SA_KEY: Service account JSON key
+  GCP_PROJECT_ID: Project ID for each environment
+  TF_API_TOKEN: Terraform Cloud API token (if using)
+```
+
+## Development Workflow
+
+1. Feature Development
+```bash
+# Create feature branch
+git checkout -b feature/new-feature
+
+# Make changes and test locally
+terraform init
+terraform plan
+
+# Commit changes
+git add .
+git commit -m "feat: add new feature"
+
+# Push and create PR
+git push origin feature/new-feature
+```
+
+2. Pull Request Process
+- Create PR to `develop`
+- Wait for CI checks
+- Get review approval
+- Merge to `develop`
+
+3. Release Process
+- Create PR from `develop` to `main`
+- Verify staging deployment
+- Get final approval
+- Merge to `main`
+
+## Best Practices
+
+### Code Organization
+```yaml
+Modules:
+  - One responsibility per module
+  - Clear input/output definitions
+  - README for each module
+  - Example configurations
+
+Variables:
+  - Use descriptive names
+  - Include descriptions
+  - Define types and validation
+  - Provide examples
+
+State Management:
+  - Use remote state
+  - Enable versioning
+  - Implement state locking
+  - Regular backups
+```
+
+### Security
+```yaml
+Access Control:
+  - Use service accounts
+  - Minimum required permissions
+  - Rotate credentials
+  - Audit logging
+
+Sensitive Data:
+  - Never commit .tfvars
+  - Use GitHub secrets
+  - Encrypt sensitive values
+  - Regular security reviews
+```
