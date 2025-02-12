@@ -1,0 +1,184 @@
+# ansible/inventory/ground_control.yml
+---
+all:
+  children:
+    ground_control:
+      hosts:
+        # Template for a Ground Control station
+        # gc-01:
+        #   ansible_host: 192.168.1.100
+        #   ansible_user: pi
+        #   ansible_port: 22
+        #   ansible_ssh_private_key_file: ~/.ssh/ground_control
+      
+      # Group variables for all Ground Control stations
+      vars:
+        # System Configuration
+        timezone: UTC
+        locale: en_US.UTF-8
+        system_packages:
+          - python3-pip
+          - python3-venv
+          - git
+          - docker.io
+          - nginx
+        
+        # Docker Configuration
+        docker_compose_version: "2.17.2"
+        docker_users:
+          - pi
+        
+        # Ground Control Configuration
+        ground_control_version: "0.1.0"
+        ground_control_port: 8000
+        ground_control_data_path: /opt/splat/data
+        ground_control_config_path: /opt/splat/config
+        ground_control_logs_path: /opt/splat/logs
+        
+        # LoRa Configuration
+        lora_device: /dev/spidev0.0
+        lora_reset_pin: 25
+        lora_frequency: 915.0
+        lora_bandwidth: 125000
+        lora_spreading_factor: 7
+        lora_tx_power: 20
+        
+        # Monitoring Configuration
+        monitoring_enabled: true
+        prometheus_retention_days: 15
+        grafana_port: 3000
+        node_exporter_enabled: true
+        
+        # Backup Configuration
+        backup_enabled: true
+        backup_retention_days: 30
+        backup_path: /opt/splat/backups
+        
+        # Security Configuration
+        ufw_enabled: true
+        ssh_port: 22
+        allowed_ports:
+          - "{{ ssh_port }}"
+          - "{{ ground_control_port }}"
+          - "{{ grafana_port }}"
+        
+    development:
+      hosts:
+        gc-dev-01:
+          ansible_host: 192.168.1.101
+          ansible_user: pi
+          ansible_ssh_private_key_file: ~/.ssh/ground_control_dev
+      vars:
+        environment: development
+        log_level: DEBUG
+        monitoring_enabled: true
+        backup_enabled: false
+        
+    staging:
+      hosts:
+        gc-staging-01:
+          ansible_host: 192.168.1.102
+          ansible_user: pi
+          ansible_ssh_private_key_file: ~/.ssh/ground_control_staging
+      vars:
+        environment: staging
+        log_level: INFO
+        monitoring_enabled: true
+        backup_enabled: true
+        
+    production:
+      hosts:
+        gc-prod-01:
+          ansible_host: 192.168.1.103
+          ansible_user: pi
+          ansible_ssh_private_key_file: ~/.ssh/ground_control_prod
+      vars:
+        environment: production
+        log_level: WARNING
+        monitoring_enabled: true
+        backup_enabled: true
+        backup_retention_days: 90
+        
+  vars:
+    # Global variables for all hosts
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_become: yes
+    ansible_become_method: sudo
+    
+    # Common paths
+    splat_base_path: /opt/splat
+    
+    # Cloud Configuration
+    gcp_region: us-central1
+    
+    # Default feature flags
+    feature_flags:
+      remote_monitoring: true
+      auto_updates: true
+      telemetry_enabled: true
+      health_checks: true
+      
+    # Deployment settings
+    deployment_timeout: 600
+    health_check_retries: 6
+    health_check_delay: 10
+    
+    # Network settings
+    network_timeout: 30
+    connection_retries: 3
+    
+    # Update settings
+    update_on_deploy: true
+    update_cache_valid_time: 3600
+
+# Host grouping by role
+ground_control_primary:
+  hosts:
+    gc-prod-01:
+  vars:
+    is_primary: true
+    backup_primary: gc-prod-02
+
+ground_control_secondary:
+  hosts:
+    gc-prod-02:
+  vars:
+    is_primary: false
+    primary_host: gc-prod-01
+
+# Host grouping by region
+us_west:
+  hosts:
+    gc-prod-01:
+  vars:
+    region: us-west
+    timezone: America/Los_Angeles
+
+us_east:
+  hosts:
+    gc-prod-02:
+  vars:
+    region: us-east
+    timezone: America/New_York
+
+# Host grouping by deployment type
+full_stack:
+  hosts:
+    gc-prod-01:
+    gc-staging-01:
+  vars:
+    deployment_type: full
+    required_services:
+      - ground_control
+      - monitoring
+      - lora
+      - backup
+
+minimal:
+  hosts:
+    gc-dev-01:
+  vars:
+    deployment_type: minimal
+    required_services:
+      - ground_control
+      - lora
