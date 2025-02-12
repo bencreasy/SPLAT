@@ -1,0 +1,22 @@
+environment: "production"
+log_level: "WARNING"
+
+ground_control:
+  environment:
+    DEVELOPMENT_MODE: "false"
+    DEBUG: "false"
+    STRICT_MODE: "true"
+
+monitoring:
+  prometheus:
+    retention_days: 30
+    evaluation_interval: "30s"
+  grafana:
+    allow_anonymous: false
+    enforce_password_policy: true
+
+deployment:
+  backup:
+    enabled: true
+    retention_days: 90
+    schedule: "0 2 * * *"
