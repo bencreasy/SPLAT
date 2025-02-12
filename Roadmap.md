@@ -41,42 +41,6 @@ Test Hardware:
   - Weatherproof enclosure
 ```
 
-## Directory Setup
-
-1. Create Base Directory Structure:
-```bash
-# Create main directories
-sudo mkdir -p /opt/splat
-cd /opt/splat
-
-# Create subdirectories
-for dir in flight-director ground-control data config logs keys backups monitoring; do
-    sudo mkdir -p $dir
-done
-
-# Set permissions
-sudo chown -R splat:splat /opt/splat
-sudo chmod 755 /opt/splat
-sudo chmod 700 /opt/splat/keys
-```
-
-2. Initialize Flight Director:
-```bash
-cd /opt/splat/flight-director
-
-# Create application directories
-for dir in src ansible config scripts tests; do
-    mkdir -p $dir
-done
-
-# Copy repository files
-cp -r /path/to/repo/src/* src/
-cp -r /path/to/repo/ansible/* ansible/
-cp -r /path/to/repo/config/* config/
-cp -r /path/to/repo/scripts/* scripts/
-cp -r /path/to/repo/tests/* tests/
-```
-
 ## Remaining Development Tasks
 
 ### 1. Core Components
@@ -147,7 +111,7 @@ Monitoring:
 
 ### Test Sequence
 
-1. Pre-deployment (24 hours):
+1. Pre-deployment:
 ```bash
 # System setup
 ./scripts/install.sh --env test
