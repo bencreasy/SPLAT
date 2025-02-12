@@ -1,0 +1,78 @@
+# src/ansible/playbooks/rollback.yml
+---
+- name: Rollback SPLAT Deployment
+  hosts: ground_control
+  become: yes
+  
+  pre_tasks:
+    - name: Load deployment history
+      slurp:
+        src: /opt/splat/deployment-info.yml
+      register: deployment_info
+      
+    - name: Parse deployment information
+      set_fact:
+        previous_deployment: "{{ deployment_info.content | b64decode | from_yaml }}"
+        
+    - name: Verify rollback is possible
+      assert:
+        that:
+          - previous_deployment is defined
+          - previous_deployment.version is defined
+        msg: "Unable to determine previous deployment state"
+
+  roles:
+    - role: rollback
+      tags: ['rollback']
+      vars:
+        target_version: "{{ previous_deployment.version }}"
+        
+  tasks:
+    - name: Stop current services
+      docker_compose:
+        project_src: /opt/splat
+        state: absent
+        remove_orphans: yes
+        
+    - name: Restore previous configuration
+      block:
+        - name: Restore Ground Control configuration
+          copy:
+            src: "backup/{{ previous_deployment.deployment_id }}/config/"
+            dest: /opt/splat/config/
+            mode: preserve
+            
+        - name: Restore Docker Compose configuration
+          copy:
+            src: "backup/{{ previous_deployment.deployment_id }}/docker-compose.yml"
+            dest: /opt/splat/docker-compose.yml
+            mode: preserve
+            
+    - name: Start previous version services
+      docker_compose:
+        project_src: /opt/splat
+        state: present
+        
+    - name: Verify rollback
+      uri:
+        url: "http://localhost:{{ ground_control_port }}/health"
+        return_content: yes
+      register: health_check
+      until: health_check.status == 200
+      retries: 6
+      delay: 10
+        
+  post_tasks:
+    - name: Record rollback
+      copy:
+        content: |
+          rollback_from: {{ deployment_id }}
+          rollback_to: {{ previous_deployment.deployment_id }}
+          timestamp: {{ ansible_date_time.iso8601 }}
+          status: {{ 'successful' if health_check.status == 200 else 'failed' }}
+        dest: /opt/splat/rollback-info.yml
+        mode: '0644'
+        
+    - name: Notify rollback status
+      debug:
+        msg: "Rollback to version {{ previous_deployment.version }} {{ 'successful' if health_check.status == 200 else 'failed' }}"
