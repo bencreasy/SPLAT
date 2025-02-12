@@ -1,1 +1,22 @@
+# Sensitive data - should be encrypted with ansible-vault
+vault_secrets:
+  grafana_admin_password: "{{ vault_grafana_admin_password }}"
+  gcp_service_account_key: "{{ vault_gcp_service_account_key }}"
+  lora_encryption_key: "{{ vault_lora_encryption_key }}"
+  deployment_key: "{{ vault_deployment_key }}"
 
+# Cloud credentials
+gcp_credentials:
+  project_id: "{{ vault_gcp_project_id }}"
+  service_account_key: "{{ vault_gcp_service_account_key }}"
+
+# Database credentials
+database_credentials:
+  user: "{{ vault_db_user }}"
+  password: "{{ vault_db_password }}"
+  host: "{{ vault_db_host }}"
+
+# API keys and tokens
+api_credentials:
+  telemetry_key: "{{ vault_telemetry_key }}"
+  monitoring_token: "{{ vault_monitoring_token }}"
