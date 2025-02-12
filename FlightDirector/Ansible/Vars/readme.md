@@ -1,5 +1,4 @@
 # ansible/vars/main.yml
----
 # Main variable definitions
 splat_version: "0.1.0"
 deployment_timestamp: "{{ ansible_date_time.iso8601 }}"
