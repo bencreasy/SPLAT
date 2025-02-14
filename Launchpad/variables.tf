@@ -55,17 +55,17 @@ variable "ground_station_cidrs" {
 variable "developer_group" {
   description = "Email of the developers group"
   type        = string
-  default     = "splat@ghostlab.net"  
+  default     = "group:splat@ghostlab.net"   
 }
 
 variable "operator_group" {
   description = "Email of the operators group"
   type        = string
-  default     = "splat@ghostlab.net"  
+  default     = "group:splat@ghostlab.net"  
 }
 
 variable "devops_group" {
   description = "Email of the DevOps team group"
   type        = string
-  default     = "splat@ghostlab.net" 
+  default     = "group:splat@ghostlab.net" 
 }
