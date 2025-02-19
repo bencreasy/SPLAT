@@ -35,10 +35,27 @@ resource "google_compute_subnetwork" "splat_subnet" {
 # Service Accounts
 
 ## Device Service Account
+resource "google_project_iam_binding" "terraform_deployer" {
+  project = var.project_id
+  role    = "roles/resourcemanager.projectIamAdmin"
+  members = [
+    "user:${var.terraform_deployer}"
+  ]
+}
+
 resource "google_service_account" "device_sa" {
   account_id   = "splat-device-${var.environment}"
   display_name = "SPLAT Device Service Account - ${var.environment}"
   project      = var.project_id
+}
+
+resource "google_project_iam_binding" "device_sa_binding" {
+  project = var.project_id
+  role    = "roles/cloudiot.deviceController"
+  members = [
+    "serviceAccount:${google_service_account.device_sa.email}"
+  ]
+  depends_on = [google_service_account.device_sa]
 }
 
 resource "google_project_iam_member" "device_sa_roles" {
