@@ -83,7 +83,7 @@ resource "google_bigquery_dataset" "telemetry_analytics" {
 
   access {
     role          = "OWNER"
-    special_group = "projectOwners"
+    user_by_email = google_service_account.analytics_sa.email
   }
 
   access {
