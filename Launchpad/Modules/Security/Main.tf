@@ -39,7 +39,7 @@ resource "google_project_iam_binding" "terraform_deployer" {
   project = var.project_id
   role    = "roles/resourcemanager.projectIamAdmin"
   members = [
-    "user:${var.terraform_deployer}"
+    "user:${var.developer_group}"
   ]
 }
 
