@@ -55,6 +55,12 @@ variable "service_account_email" {
   type        = string
 }
 
+variable "developer_group" {
+  description = "Email of the developers group"
+  type        = string
+  default     = "splat@ghostlab.net"   
+}
+
 variable "storage_alert_threshold" {
   description = "Storage usage threshold for alerts (percentage)"
   type        = number
