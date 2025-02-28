@@ -52,21 +52,34 @@ resource "google_storage_bucket" "raw_data" {
     }
   }
 
-# Firestore
 
-resource "google_firestore_database" "splat_db" {
-  project     = var.project_id
-  name        = "(default)"
-  location_id = var.firestore_location
-  type        = "FIRESTORE_NATIVE"
+#Firestore is commented out for initial deployment
+# Firestore 
 
-  concurrency_mode = "OPTIMISTIC"
+# resource "google_firestore_database" "splat_db" {
+#   project     = var.project_id
+#   name        = "(default)"
+#   location_id = var.firestore_location
+#   type        = "FIRESTORE_NATIVE"
+#
+#   concurrency_mode = "OPTIMISTIC"
+#
+#   app_engine_integration_mode = "DISABLED"
+# }
 
-  app_engine_integration_mode = "DISABLED"
-}
+#resource "google_firestore_database" "splat_db" {
+#  project     = var.project_id
+#  name        = "(default)"
+#  location_id = var.firestore_location
+#  type        = "FIRESTORE_NATIVE"
+
+#  concurrency_mode = "OPTIMISTIC"
+
+#  app_engine_integration_mode = "DISABLED"
+#}
+
 
 # BigQuery Dataset for Analytics
-
 resource "google_bigquery_dataset" "telemetry_analytics" {
   dataset_id                  = "splat_telemetry_${var.environment}"
   friendly_name              = "SPLAT Telemetry Analytics"
@@ -83,13 +96,20 @@ resource "google_bigquery_dataset" "telemetry_analytics" {
 
   access {
     role          = "OWNER"
-    special_group = "projectOwners"
+    group_by_email = var.developer_group
   }
 
   access {
     role           = "READER"
     group_by_email = var.analyst_group_email
   }
+}
+
+# IAM member for BigQuery
+resource "google_project_iam_member" "bigquery" {
+  project = var.project_id
+  role    = "roles/bigquery.dataViewer"
+  member  = "group:${var.service_account_email}"  # Make sure this is actually a group email
 }
 
 # Create standard tables
