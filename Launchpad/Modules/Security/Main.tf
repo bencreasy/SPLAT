@@ -35,10 +35,27 @@ resource "google_compute_subnetwork" "splat_subnet" {
 # Service Accounts
 
 ## Device Service Account
+resource "google_project_iam_binding" "terraform_deployer" {
+  project = var.project_id
+  role    = "roles/resourcemanager.projectIamAdmin"
+  members = [
+    "group:${var.developer_group}"
+  ]
+}
+
 resource "google_service_account" "device_sa" {
   account_id   = "splat-device-${var.environment}"
   display_name = "SPLAT Device Service Account - ${var.environment}"
   project      = var.project_id
+}
+
+resource "google_project_iam_binding" "device_sa_binding" {
+  project = var.project_id
+  role    = "roles/cloudiot.deviceController"
+  members = [
+    "serviceAccount:${google_service_account.device_sa.email}"
+  ]
+  depends_on = [google_service_account.device_sa]
 }
 
 resource "google_project_iam_member" "device_sa_roles" {
@@ -119,9 +136,9 @@ resource "google_project_iam_member" "monitoring_sa_roles" {
 ## DevOps Team
 resource "google_project_iam_member" "devops_roles" {
   for_each = toset([
-    "roles/owner",
+    "roles/viewer",  # Reduced from owner for initial deployment
     "roles/iam.securityReviewer",
-    "roles/monitoring.admin"
+    "roles/monitoring.viewer"  # Reduced from admin for initial deployment
   ])
   
   project = var.project_id
@@ -132,8 +149,8 @@ resource "google_project_iam_member" "devops_roles" {
 ## Developers
 resource "google_project_iam_member" "developer_roles" {
   for_each = toset([
-    "roles/editor",
-    "roles/cloudiot.admin",
+    "roles/viewer",  # Reduced from editor for initial deployment
+    "roles/cloudiot.viewer",  # Reduced from admin for initial deployment
     "roles/monitoring.viewer"
   ])
   
