@@ -15,24 +15,6 @@ Ansible configuration management for SPLAT Ground Control stations. FlightDirect
 
 ## System Architecture
 
-```mermaid
-graph TD
-    A[SPLAT Field Units] -->|LoRa| B[Ground Control]
-    B -->|Cloud Pub/Sub| C[Cloud Infrastructure]
-    C -->|Processing| D[Data Storage]
-    C -->|API| E[User Interface]
-    
-    subgraph LaunchPad
-        C
-        D
-        E
-    end
-    
-    subgraph FlightDirector
-        B
-    end
-```
-
 ## Prerequisites
 
 ### Software Requirements
@@ -195,19 +177,3 @@ ansible-playbook playbooks/backup.yml
 
 
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
-
-## Project Status
-
-Current Version: 0.1.0-beta
-
-- [x] Basic Infrastructure
-- [x] Ground Control Setup
-- [ ] Production Hardening
-- [ ] Multi-Region Support
-- [ ] Enterprise Features
-
----
