@@ -8,45 +8,45 @@ The Eden Control System provides a framework for monitoring and controlling hydr
 
 ## Directory Structure
 eden_control/
-├── init.py             # Package initialization
-├── main.py                 # Main application entry point
-├── core/                   # Core system components
-│   ├── init.py
-│   ├── system_manager.py   # System coordination
-│   ├── event_bus.py        # Event distribution system
-│   ├── config_manager.py   # Configuration handling
-│   └── error_handler.py    # Error management
-│
-├── communication/          # Communication components
-│   ├── init.py
-│   └── cloud_manager.py    # LaunchPad cloud integration
-│
-├── ui/                     # User interface components
-│   ├── init.py
-│   ├── display_manager.py  # Display initialization and management
-│   └── dashboard.py        # Main dashboard view
-│
-├── data/                   # Data management components
-│   ├── init.py
-│   └── log_manager.py      # Logging system
-│
-├── hardware/               # Hardware control (stubbed)
-│   ├── init.py
-│   ├── relay_controller.py # Relay control interface
-│   └── sensor_manager.py   # Sensor management
-│
-└── modules/                # Subsystem modules (future)
-├── init.py
-├── water_module.py     # Water management (stub)
-├── light_module.py     # Lighting control (stub)
-└── nutrient_module.py  # Nutrient control (stub)
-config/
-└── default.yml             # Default configuration file
+  init.py             # Package initialization
+  main.py                 # Main application entry point
+  core/                   # Core system components
+    init.py
+    system_manager.py   # System coordination
+    event_bus.py        # Event distribution system
+    config_manager.py   # Configuration handling
+    error_handler.py    # Error management
+
+  communication/          # Communication components
+    init.py
+    cloud_manager.py    # LaunchPad cloud integration
+
+  ui/                     # User interface components
+    init.py
+    display_manager.py  # Display initialization and management
+    dashboard.py        # Main dashboard view
+
+  data/                   # Data management components
+    init.py
+    log_manager.py      # Logging system
+
+  hardware/               # Hardware control (stubbed)
+    init.py
+    relay_controller.py # Relay control interface
+    ensor_manager.py   # Sensor management
+
+   modules/                # Subsystem modules (future)
+    init.py
+    water_module.py     # Water management (stub)  
+    light_module.py     # Lighting control (stub)
+    nutrient_module.py  # Nutrient control (stub)
+config/  
+  default.yml             # Default configuration file
 logs/                       # Log directory
-└── eden.log                # System log file
+  eden.log                # System log file
 scripts/
-├── install.sh              # Installation script
-└── update.sh               # Update script
+  install.sh              # Installation script
+  update.sh               # Update script
 
 ## Features
 
