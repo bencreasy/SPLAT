@@ -1,0 +1,39 @@
+system:
+  id: "eden-prototype"
+  name: "Eden Prototype"
+  version: "0.1.0"
+
+display:
+  width: 800
+  height: 480
+  fps: 30
+  
+cloud:
+  api_url: "https://api.example.com/v1"
+  api_key: "your-api-key-here"
+  sync_interval: 60
+  
+logging:
+  directory: "logs"
+  level: "INFO"
+  max_size: 10485760  # 10MB
+  backup_count: 5
+  
+hardware:
+  # Stub configurations for future hardware
+  relays:
+    count: 8
+    gpio_base: 17
+  sensors:
+    enabled: false
+  pumps:
+    main_pump: 
+      enabled: false
+      relay: 4
+    cooling_pump:
+      enabled: false
+      relay: 2
+  tec:
+    enabled: false
+    power_relay: 3
+    polarity_relay: 1
