@@ -32,12 +32,10 @@ Core Hardware:
 
 ### Test Node (SPLAT Hopper)
 ```yaml
-Test Hardware:
+Test Hardware: LilyGo LoRa32
   - ESP32-WROOM-32
-  - RFM95W LoRa module
   - 18650 battery + holder
   - Solar charging module
-  - Basic sensors package
   - Weatherproof enclosure
 ```
 
@@ -47,7 +45,7 @@ Test Hardware:
 ```yaml
 Required Development:
   Ground Control Interface:
-    - Implement LoRa packet handler
+    - Implement NATS message handler
     - Add basic data validation
     - Create local storage manager
     - Setup monitoring service
@@ -58,11 +56,6 @@ Required Development:
     - Add error handling
     - Create backup system
     
-  Security Implementation:
-    - Generate production keys
-    - Implement encryption
-    - Setup secure communication
-    - Configure firewalls
 ```
 
 ### 2. Testing Framework
