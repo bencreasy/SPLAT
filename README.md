@@ -11,8 +11,9 @@ This repository contains two main components:
 Infrastructure as Code (Terraform) deployment for SPLAT's cloud infrastructure. LaunchPad manages all cloud resources required for SPLAT operations, including IoT Core, message queues, data storage, and processing functions.
 
 ### 🎮 FlightDirector
-Ansible configuration management for SPLAT Ground Control stations. FlightDirector handles the deployment and management of local ground station software, including LoRa communication, data processing, and monitoring systems.
+FlightDirector is the mission control for your IoT operations. Like NASA’s Flight Director polling all systems before launch, our platform continuously monitors your infrastructure and gives you the confidence to say “Go for launch”
 
+Single Platform, Multiple Missions: FlightDirector runs different services for different applications, but uses the same proven foundation:
 ## System Architecture
 
 ## Prerequisites
